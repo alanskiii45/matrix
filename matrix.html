@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Matrix Fork Bomb</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+    button {
+      margin-right: 10px;
+      padding: 10px;
+      background: limegreen;
+      color: black;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    #warning {
+      position: absolute;
+      top: 50px;
+      left: 10px;
+      color: red;
+      font-family: monospace;
+      font-size: 18px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="startBtn">Run Fork Bomb</button>
+    <button id="stopBtn">Shutdown</button>
+  </div>
+  <div id="warning">⚠️ SYSTEM OVERLOAD ⚠️</div>
+  <canvas id="matrix"></canvas>
+
+  <audio id="glitchSound" src="https://freesound.org/data/previews/341/341695_5260877-lq.mp3"></audio>
+
+  <script>
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+    const glitchSound = document.getElementById("glitchSound");
+    const warning = document.getElementById("warning");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const chars = "01@#$%&*";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    let drops = Array(Math.floor(columns)).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#0F0";
+      ctx.font = fontSize + "px monospace";
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    let drawInterval;
+    let spawnInterval;
+
+    document.getElementById("startBtn").onclick = () => {
+      if (!drawInterval) {
+        drawInterval = setInterval(drawMatrix, 50);
+      }
+      if (!spawnInterval) {
+        spawnInterval = setInterval(() => {
+          drops = drops.concat([...drops]);
+          glitchSound.play();
+          warning.style.display = "block";
+        }, 1000); // Auto-spawn every second
+      }
+    };
+
+    document.getElementById("stopBtn").onclick = () => {
+      clearInterval(drawInterval);
+      clearInterval(spawnInterval);
+      drawInterval = null;
+      spawnInterval = null;
+      warning.style.display = "none";
+      glitchSound.pause();
+      glitchSound.currentTime = 0;
+    };
+  </script>
+</body>
+</html>
